@@ -1,6 +1,5 @@
 {
   addDriverRunpath,
-  callPackage,
   gamemode,
   kdePackages,
   lib,
@@ -13,14 +12,13 @@
   symlinkJoin,
   udev,
   vulkan-loader,
+
+  glfw-minecraft-wayland-fix,
+  zing,
 }:
 
 let
   prismlauncher' = prismlauncher-unwrapped.override { };
-
-  java = callPackage ./zing.nix { };
-
-  glfw-minecraft-wayland-fix = callPackage ./glfw-minecraft-wayland-fix { };
 in
 
 symlinkJoin {
@@ -57,7 +55,7 @@ symlinkJoin {
       ];
 
       runtimePrograms = [
-        java # instead of PRISMLAUNCHER_JAVA_PATHS for nicer path
+        zing # instead of PRISMLAUNCHER_JAVA_PATHS for nicer path
         pciutils # uses lspci
       ];
 

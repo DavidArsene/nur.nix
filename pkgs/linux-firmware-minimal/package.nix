@@ -3,10 +3,11 @@
   fetchgit,
   lib,
 
-  blobs,
-  hash,
-  tag,
+  blobs ? throw,
+  hash ? throw,
+  tag ? throw,
 }:
+
 stdenvNoCC.mkDerivation {
   pname = "linux-firmware-minimal";
   version = tag;

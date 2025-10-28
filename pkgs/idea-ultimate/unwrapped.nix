@@ -34,7 +34,7 @@
     # "configurationScript"
     # "copyright"
     # "cron"
-    "css-impl" # TODO::
+    "css-impl"
     "cwm-plugin"
     "DatabaseTools"
     # "dev"
@@ -60,7 +60,7 @@
     # "java-debugger-streams"
     # "java-decompiler"
     # "java-dsm"
-    # "java-i18n" TODO:
+    # "java-i18n"
     # "java-ide-customization"
     "JavaEE"
     "javaee-app-servers-impl"
@@ -79,7 +79,7 @@
     "javaFX"
     "javascript-debugger"
     "javascript-intentions"
-    "javascript-plugin" # TODO:
+    # "javascript-plugin" TODO:
     "JPA"
     "JPA Model"
     # "json"
@@ -92,7 +92,7 @@
     "keymap-visualStudio"
     # "Kotlin"
     "kotlin-jupyter-plugin"
-    # "ktor"
+    "ktor"
     "less"
     "liquibase"
     "localization-ja"
@@ -114,7 +114,7 @@
     # "packageChecker"
     # "performanceTesting"
     # "performanceTesting-async"
-    # "platform-ijent-impl" TODO:
+    "platform-ijent-impl"
     # "platform-images"
     # "platform-langInjection"
     "postcss"
