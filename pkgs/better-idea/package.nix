@@ -7,39 +7,48 @@
 
   gitMinimal,
   procps,
+  gnupg,
   libGL,
   zlib,
-  # glibcLocales,
+
+  libsecret,
+  e2fsprogs,
+  libnotify,
+  udev,
 
   jetbrains,
-  jbr ? jetbrains.jdk,
+  jbr' ? jetbrains.jdk,
+  nixd,
+  nixfmt,
 
   maven,
-  mvn' ? maven.override { jdk_headless = jbr; },
+  mvn' ? maven.override { jdk_headless = jbr'; },
 
   extraProperties ? { },
   extraArgs ? [ ],
+
+  withDebugFeatures ? false,
 }:
 
 with lib;
 let
   join = concatStringsSep;
 
-  #> Ugh IFD, couldn't come up with a better method
-  #> Dynamic that is, I ain't sitting around running update scripts
-  app = (callPackage ./unwrapped.nix { inherit jbr; }).out;
+  #! Ugh IFD, couldn't come up with a better method
+  #! Dynamic that is, I ain't sitting around running update scripts
+  app = (callPackage ./idea-unwrapped.nix { }).out;
 
   product-info = trivial.importJSON "${app}/product-info.json";
   launchMeta = lists.head product-info.launch;
   classpath = launchMeta.bootClassPathJarNames |> map (p: "$IDE_HOME/lib/${p}") |> join ":";
 
-  #> Moved here everything from the old postPatch
-  #> combined with the original bin/idea.sh
-  #> And turned the script wrapper around a script
-  #> into a biblically accurate launcher
+  #? Moved here everything from the old postPatch
+  #? combined with the original bin/idea.sh
+  #? And turned the script wrapper around a script
+  #? into a biblically accurate launcher
   launcherEnv = {
 
-    #> Used throughout the script for shorter paths
+    #? Used throughout the script for shorter paths
     IDE_HOME = app;
 
     LD_LIBRARY_PATH = makeLibraryPath [
@@ -47,44 +56,61 @@ let
       zlib
     ];
 
+    JAVA_HOME = jbr';
     M2_HOME = "${mvn'}/maven";
     M2 = "${mvn'}/maven/bin";
 
     # LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive"
   };
 
-  extraPath = makeBinPath [
-    jbr
-    gitMinimal
-    procps
-  ];
+  properties =
+    extraProperties
+    // {
+      "jb.vmOptionsFile" = "$IDE_HOME/${launchMeta.vmOptionsFilePath}";
+      "awt.toolkit.name" = "WLToolkit";
+      "jna.library.path" = makeLibraryPath [
+        libsecret
+        e2fsprogs
+        libnotify
+        # Required for Help -> Collect Logs
+        # in at least rider and goland
+        udev
+      ];
 
-  properties = extraProperties // {
-    "jb.vmOptionsFile" = "$IDE_HOME/${launchMeta.vmOptionsFilePath}";
-    "awt.toolkit.name" = "WLToolkit";
-
-    # "idea.config.path" = "";
-    # "idea.system.path" = "";
-    # "idea.plugins.path" = "";
-    # "idea.log.path" = "";
-  };
+      # "idea.config.path" = "";
+      # "idea.system.path" = "";
+      # "idea.plugins.path" = "";
+      # "idea.log.path" = "";
+    }
+    // optionalAttrs withDebugFeatures { "idea.is.internal" = "true"; };
 
   vmoptions = extraArgs ++ [
     "-XX:ErrorFile=$HOME/java_error_in_idea_%p.log"
     "-XX:HeapDumpPath=$HOME/java_error_in_idea_.hprof"
   ];
 
-  # TODO: System.getProperty && Boolean.getBoolean
+  # TODO: System.getProperty && Boolean.getBoolean && Registry.*Value
   launcherArgs =
     launchMeta.additionalJvmArguments
     ++ (map (k: "-D${k}=${properties.${k}}") (attrNames properties))
     ++ vmoptions;
 
-  #> They do really have obscure specialized functions for everything
+  #* They do really have obscure specialized functions for everything
   launcherBin = writeShellScriptBin "idea" ''
     ${toShellVars launcherEnv}
-    PATH="$PATH:${extraPath}"
 
+    PATH=+":${
+      makeBinPath [
+        jbr'
+
+        gitMinimal
+        procps
+        gnupg
+
+        nixd
+        nixfmt
+      ]
+    }"
     exec java -cp ${classpath} ${join " \\\n" launcherArgs} ${launchMeta.mainClass} "$@"
   '';
 in
@@ -97,7 +123,7 @@ stdenv.mkDerivation rec {
     homepage = "https://www.jetbrains.com/idea/";
     description = "All-In-One IDE tailored by and for David";
     teams = [ teams.jetbrains ];
-    license = licenses.unfree;
+    # license = licenses.unfree; FIXME: pass allowUnfree to mypkgs
     sourceProvenance = [ sourceTypes.binaryBytecode ];
   };
 

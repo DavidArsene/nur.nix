@@ -3,17 +3,23 @@
   fetchgit,
   lib,
 
-  blobs ? throw,
-  hash ? throw,
-  tag ? throw,
+  # ! Always change hash when changing `blobs`
+  blobs ? throw "no blobs specified",
+  hash ? throw "no hash specified",
+  tag ? throw "no tag specified",
+
+  # Manually create symlinks or rename files
+  # Traditionally done by WHENCE script
+  extraSetup ? "",
 }:
 
+# TODO: what is "lib/firmware/edid not found, skipping."
 stdenvNoCC.mkDerivation {
-  pname = "linux-firmware-minimal";
+  pname = "firmware-minimal";
   version = tag;
   dontBuild = true;
 
-  #! dmesg | rg "Direct firmware load for"
+  #! sudo dmesg | grep "Direct firmware load for"
 
   src = fetchgit {
     inherit hash tag;
@@ -28,7 +34,10 @@ stdenvNoCC.mkDerivation {
 
   installPhase = ''
     mkdir -p "$out/lib/firmware"
-    mv -v -t "$out/lib/firmware" ./*
+    cp -r -t "$out/lib/firmware" ./*
+
+    cd "$out/lib/firmware"
+    ${extraSetup}
   '';
 
   # The rest is part of the original package
@@ -36,11 +45,11 @@ stdenvNoCC.mkDerivation {
   # Firmware blobs do not need fixing and should not be modified
   dontFixup = true;
 
-  meta = with lib; {
+  meta = {
     description = "Binary firmware blobs, specifically selected for minimal systems";
     homepage = "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git";
-    license = licenses.unfreeRedistributableFirmware;
-    platforms = platforms.linux;
+    license = lib.licenses.unfreeRedistributableFirmware;
+    platforms = lib.platforms.linux;
     priority = 6; # give precedence to kernel firmware
   };
 }

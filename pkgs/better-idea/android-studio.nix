@@ -25,7 +25,7 @@ let
     #    "gemini" by unpouplar request
     "git4insights"
     # "gradle"
-    # "gradle-declarative"
+    # ! "gradle-declarative" # ! wat?
     # "gradle-java"
     # "Groovy"
     # "html-tools"
@@ -69,7 +69,5 @@ stdenv.mkDerivation rec {
     hash = "sha256-SlSuihfWQn8H0kUDJBMvWTkSecaxCU3gL3PkCN61ojw=";
   };
 
-  nativeBuildInputs = [
-    autoPatchelfHook
-  ];
+  nativeBuildInputs = [ autoPatchelfHook ];
 }

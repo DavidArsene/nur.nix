@@ -35,11 +35,11 @@ stdenv.mkDerivation {
     kxmlgui
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Systemd management utility";
     mainProgram = "systemdgenie";
     homepage = "https://kde.org";
-    license = licenses.gpl2;
-    platforms = platforms.linux;
+    license = lib.licenses.gpl2;
+    platforms = lib.platforms.linux;
   };
 }

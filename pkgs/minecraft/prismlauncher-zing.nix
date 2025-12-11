@@ -13,8 +13,8 @@
   udev,
   vulkan-loader,
 
-  glfw-minecraft-wayland-fix,
-  zing,
+  glfw-minecraft-wayland,
+  zing-jre,
 }:
 
 let
@@ -43,7 +43,7 @@ symlinkJoin {
       runtimeLibs = [
         (lib.getLib stdenv.cc.cc)
         ## native versions
-        glfw-minecraft-wayland-fix
+        glfw-minecraft-wayland
         openal
 
         pipewire # openal
@@ -55,7 +55,7 @@ symlinkJoin {
       ];
 
       runtimePrograms = [
-        zing # instead of PRISMLAUNCHER_JAVA_PATHS for nicer path
+        zing-jre # instead of PRISMLAUNCHER_JAVA_PATHS for nicer path
         pciutils # uses lspci
       ];
 
