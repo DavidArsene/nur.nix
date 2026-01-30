@@ -1,10 +1,9 @@
 {
-  fetchpatch,
+  autoPatchelfHook,
   fetchzip,
-  runtimeShell,
   stdenvNoCC,
 
-  fprintd,
+  pkgs,
   libfprint,
   ...
 }:
@@ -18,15 +17,14 @@ let
   fpc-driver-base = "FPC_driver_linux_27.26.23.39/install_fpc";
   libfprint-base = "FPC_driver_linux_libfprint/install_libfprint";
 
-  # No longer works since 396 now has merge conflicts
   libfprint-fpc = libfprint.overrideAttrs (attrs: {
-    doInstallCheck = false;
-    patches = [
-      (fetchpatch {
-        url = "https://gitlab.freedesktop.org/libfprint/libfprint/-/merge_requests/396.patch";
-        hash = "sha256-+5B5TPrl0ZCuuLvKNsGtpiU0OiJO7+Q/iz1+/2U4Taw=";
-      })
-    ];
+    pname = "libfprint-fpc"; # 10a5:9800
+
+    doCheck = false;
+    # not working
+    # doInstallCheck = false;
+
+    patches = [ ./396.patch ];
 
     postPatch = attrs.postPatch + ''
       substituteInPlace meson.build --replace \
@@ -39,21 +37,30 @@ let
     '';
 
     postInstall = ''
-      rules="lib/udev/rules.d/60-libfprint-2-device-fpc.rules"
-      install -Dm644 -t "$out/lib" "${fpcbep}/${libfprint-base}/$rules"
-
-      substituteInPlace "$out/lib/udev/rules.d/70-libfprint-2.rules" --replace "/bin/sh" "${runtimeShell}"
+      rudevle="lib/udev/rules.d/60-libfprint-2-device-fpc.rules"
+      cp "${fpcbep}/${libfprint-base}/$rudevle" $out/lib/udev/rules.d/
     '';
   });
 
+  #! Earlier attempt to use the provided libfprint-2.so as well
+  #! > Run-time dependency libfprint-2 found: NO (tried pkgconfig)
+  #! Kept just in case
+
   libfprint-fpc-prebuilt = stdenvNoCC.mkDerivation {
-    pname = "libfprint-fpc-prebuilt";
+    pname = "libfprint-fpc";
     version = "2.0.0";
     src = fpcbep;
 
-    installPhase = ''
-      runHook preInstall
+    buildInputs = with pkgs; [
+      glib
+      gusb
+      pixman
+      nss
+      libgudev
+    ];
+    nativeBuildInputs = [ autoPatchelfHook ];
 
+    installPhase = ''
       install -D -t "$out/lib" "${fpc-driver-base}/libfpcbep.so"
       install -D -t "$out/lib" "${libfprint-base}/usr/lib/x86_64-linux-gnu/libfprint-2.so.2.0.0"
 
@@ -62,16 +69,7 @@ let
 
       rules="lib/udev/rules.d/60-libfprint-2-device-fpc.rules"
       install -Dm644 -t "$out/lib" "${libfprint-base}/$rules"
-
-      runHook postInstall
     '';
   };
 in
-{
-  services.fprintd = {
-    enable = true;
-
-    package = fprintd.override { libfprint = libfprint-fpc-prebuilt; };
-  };
-  services.udev.packages = [ libfprint-fpc-prebuilt ];
-}
+libfprint-fpc

@@ -1,0 +1,69 @@
+--- a/396.patch
++++ b/396.patch
+@@ -12,35 +12,35 @@
+  # Supported by libfprint driver goodixmoc
+  usb:v27C6p5840*
+  usb:v27C6p6014*
+-@@ -323,7 +328,6 @@
++@@ -401,7 +401,6 @@
+  usb:v0BDAp5812*
+  usb:v10A5p0007*
+  usb:v10A5p9200*
+ -usb:v10A5p9800*
+- usb:v1188p9545*
+- usb:v138Ap0007*
+- usb:v138Ap003A*
++ usb:v10A5pA120*
++ usb:v10A5pA900*
++ usb:v10A5pE340*
+ --- a/libfprint/fprint-list-udev-hwdb.c
+ +++ b/libfprint/fprint-list-udev-hwdb.c
+-@@ -74,7 +74,6 @@
++@@ -97,7 +97,6 @@
+    { .vid = 0x0bda, .pid = 0x5812 },
+    { .vid = 0x10a5, .pid = 0x0007 },
+    { .vid = 0x10a5, .pid = 0x9200 },
+ -  { .vid = 0x10a5, .pid = 0x9800 },
+-   { .vid = 0x1188, .pid = 0x9545 },
+-   { .vid = 0x138a, .pid = 0x0007 },
+-   { .vid = 0x138a, .pid = 0x003a },
++   { .vid = 0x10a5, .pid = 0xa120 },
++   { .vid = 0x10a5, .pid = 0xa900 },
++   { .vid = 0x10a5, .pid = 0xe340 },
+ --- a/libfprint/meson.build
+ +++ b/libfprint/meson.build
+-@@ -141,6 +141,8 @@
++@@ -149,6 +149,8 @@
+          [ 'drivers/goodixmoc/goodix.c', 'drivers/goodixmoc/goodix_proto.c' ],
+      'fpcmoc' :
+          [ 'drivers/fpcmoc/fpc.c' ],
+ +    'fpcmoh' :
+ +        [ 'drivers/fpcmoh/fpc.c'],
+- }
+- 
+- helper_sources = {
++     'realtek' :
++         [ 'drivers/realtek/realtek.c' ],
++     'focaltech_moc' :
+ @@ -154,6 +156,8 @@
+          [ ],
+      'udev' :
+@@ -52,14 +52,14 @@
+  }
+ --- a/meson.build
+ +++ b/meson.build
+-@@ -126,6 +126,7 @@
++@@ -142,6 +142,7 @@
+      'goodixmoc',
+      'nb1010',
+      'fpcmoc',
+ +    'fpcmoh',
+- 
+-     # SPI
+-     'elanspi',
++     'realtek',
++     'focaltech_moc',
++ ]
+ @@ -158,6 +159,7 @@
+      'aes4000' : [ 'aeslib', 'aes3k' ],
+      'uru4000' : [ 'nss' ],

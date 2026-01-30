@@ -10,18 +10,16 @@
   arch ? "x64",
   distro_version ? [
     25
-    10
+    12
     0
     0
   ],
   java_version ? [
     21
     0
-    8
-    0
-    101
+    9
   ],
-  distro_build_number ? "4",
+  distro_build_number ? "3",
 }:
 
 # Respectfully kanged from
@@ -30,7 +28,7 @@
 assert arch == "x64" || arch == "aarch64";
 assert type == "jre" || type == "jdk";
 # No JRE builds for ARM
-assert !(type == "jre" && arch == "aarch64");
+assert arch == "aarch64" -> type == "jdk";
 
 let
   listToVersion = lib.concatMapStringsSep "." toString;
@@ -41,7 +39,7 @@ let
 
   #? Final attributes
   url = "${cdnRoot}/ZVM${distro}/zing${distro}-${distro_build_number}-${java}-linux_${arch}.tar.gz";
-  hash = "sha256-+wqtl3fzuQXikXhPxbQuWAwREvPgU+CFEG/KEQBzsMg=";
+  hash = "sha256-iJ03eNvqk0DDqrpf//CCjAz5nIceMgB6sZXpJjz0CLA=";
 in
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,8 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [ setJavaClassPath ];
 
   installPhase = ''
-    runHook preInstall
-
     # Illegal
     rm -r legal/
 
@@ -68,9 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     rm lib/lib{awt_xawt,jawt,jsound,splashscreen}.so
 
     mkdir $out
-    cp ./* $out/
-
-    runHook postInstall
+    cp -r ./* $out/
   '';
 
   strictDeps = true;
@@ -78,6 +72,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     homepage = "https://www.azul.com/products/prime";
     changelog = "https://docs.azul.com/prime/release-notes";
+
+    # ! CRITICAL: cannot download files without account or API token anymore
+    broken = true;
 
     # TODO: Java 25 when?
     # https://api.azul.com/metadata/v1/docs/swagger
@@ -91,7 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
       binaryBytecode
       binaryNativeCode
     ];
-    # license = lib.licenses.unfree; FIXME:
+    license = lib.licenses.unfree;
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

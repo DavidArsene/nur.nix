@@ -3,13 +3,14 @@
   fetchgit,
   lib,
 
-  # ! Always change hash when changing `blobs`
-  blobs ? throw "no blobs specified",
-  hash ? throw "no hash specified",
-  tag ? throw "no tag specified",
+  #! Always change hash when changing `blobs`
+  blobs ? (throw "no blobs specified"),
+  hash ? (throw "no hash specified"),
+  tag ? (throw "no tag specified"),
 
-  # Manually create symlinks or rename files
-  # Traditionally done by WHENCE script
+  #! You should manually create symlinks or rename files
+  # Usually this is done by WHENCE script
+  # TODO: use original WHENCE but ignore errors?
   extraSetup ? "",
 }:
 

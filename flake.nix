@@ -18,6 +18,17 @@
         directory = ./pkgs;
       };
 
+      nixosModules = {
+        fprintd-fpc = import ./nixosModules/fprintd-fpc.nix;
+        ro-cei-pcsc = import ./nixosModules/ro-cei-pcsc.nix;
+      };
+
       legacyPackages.${system} = packages;
+
+      # TODO: STDENV DEFAULT
+      stripDebugFlags = [
+        "--preserve-dates"
+        "--strip-unneeded"
+      ];
     };
 }

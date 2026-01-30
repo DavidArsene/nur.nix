@@ -63,20 +63,22 @@ let
     # symbolic name and `patch' is the actual patch.  The patch may
     # optionally be compressed with gzip or bzip2.
     kernelPatches =
-      {
-        "cachy-base" = "0001-cachyos-base-all.patch";
-        # some scheds TODO:
-        "acpi-call" = "misc/0001-acpi-call.patch";
-        "clang-polly" = "misc/0001-clang-polly.patch";
-      }
-      |> lib.mapAttrs (
-        name: patch: {
+      lib.mapAttrs
+        (name: patch: {
           inherit name;
           patch = "${patchesDir}/${patch}";
-        }
-      );
+        })
+        {
+          "cachy-base" = "0001-cachyos-base-all.patch";
+          # some scheds TODO:
+          "acpi-call" = "misc/0001-acpi-call.patch";
+          "clang-polly" = "misc/0001-clang-polly.patch";
+        };
 
-    extraMeta = { };
+    extraMeta = {
+      # FIXME: unfinished
+      broken = true;
+    };
     extraPassthru = { };
   };
 

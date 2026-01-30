@@ -7,11 +7,11 @@
 
 appimageTools.wrapType2 rec {
   pname = "helium";
-  version = "0.7.2.1";
+  version = "0.10.0.1";
 
   src = fetchurl {
     url = "${meta.homepage}/releases/download/${version}/helium-${version}-x86_64.AppImage";
-    hash = "sha256-PwXgpmauBN6EXoZE6HnpgrisrO5a9VzQEDv3T2OsPnc=";
+    hash = "";
   };
 
   extraInstallCommands =
@@ -20,12 +20,14 @@ appimageTools.wrapType2 rec {
     in
     ''
       install -m 444 -D ${contents}/${pname}.desktop -t $out/share/applications
-      substituteInPlace $out/share/applications/${pname}.desktop --replace-fail 'Exec=AppRun' 'Exec=${meta.mainProgram}'
+      substituteInPlace $out/share/applications/${pname}.desktop \
+        --replace-warn 'Exec=AppRun' 'Exec=${meta.mainProgram}' \
+        --replace-warn 'Exec=${pname}' 'Exec=${meta.mainProgram}'
 
       cp -r ${contents}/usr/share/* $out/share/
 
       localeFiles="${contents}/opt/${pname}/locales/${lang}*"
-      echo "Installing files for locale ${lang}:"
+      echo "Installing files for locale '${lang}':"
       ls $localeFiles
 
       install -d $out/share/lib/${pname}/locales
@@ -37,13 +39,8 @@ appimageTools.wrapType2 rec {
     homepage = "https://github.com/imputnet/helium-linux";
     changelog = "${meta.homepage}/releases/tag/${version}";
     license = lib.licenses.gpl3;
-    maintainers = [
-      "Ev357"
-      "Prinky"
-      "DavidArsene"
-    ];
     platforms = [ "x86_64-linux" ];
     mainProgram = pname;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

@@ -4,284 +4,164 @@
   fetchurl,
   autoPatchelfHook,
 
-  musl,
-  # lldb,
   fontconfig,
   libGL,
-  # xorg.libX11,
-
-  python3,
-  openssl,
-  libxcrypt-legacy,
   lttng-ust_2_12,
 
   libdbusmenu,
   fsnotifier,
 
-  # # Create new plugin list for diffing
-  # tar tf *ideaIU-*.tar.gz --exclude='*-*/plugins/*/*' *-*/plugins/ | xargs -n1 basename | sort | uniq
-  removedPlugins ? [
-    # "android-gradle-declarative-lang-ide"
-    # "android-gradle-dsl"
-    "angular"
-    "aopCommon"
-    "clouds-docker-gateway"
-    "clouds-docker-impl"
-    "clouds-kubernetes"
-    # "completionMlRanking"
-    "compose-ide-plugin"
-    "configurationScript"
-    "copyright" # ?
-    "cron" # ?
-    "css-impl"
-    "css-plugin"
-    "cwm-plugin"
-    "DatabaseTools"
-    "debugger-collections-visualizer"
-    # "dev"
-    "eclipse"
-    "editorconfig-plugin" # ?
-    "featuresTrainer"
-    # "findUsagesMl"
-    "flyway"
-    "freemarker"
-    "fullLine"
-    "gateway-plugin"
-    # "gradle"
-    "gradle-java" # ?
-    "grazie"
-    # "grid-plugin"
-    # "Groovy"
-    "hibernate"
-    "html-tools"
-    # "indexing-shared"
-    # "indexing-shared-ultimate-plugin-bundled"
-    # "java"
-    # "java-byteCodeViewer"
-    "java-coverage"
-    # "java-debugger-streams"
-    # "java-decompiler"
-    "JavaEE"
-    "javaee-app-servers-impl"
-    "javaee-appServers-jboss"
-    "javaee-appServers-tomcat"
-    "javaee-beanValidation"
-    "javaee-cdi"
-    "javaee-el-core"
-    "javaee-extensions"
-    "javaee-jakarta-data"
-    "javaee-jax-rs"
-    "javaee-jsp-base-impl"
-    "javaee-persistence-impl"
-    "javaee-reverseEngineering"
-    "JavaeeWeb"
-    "javaFX"
-    # "java-i18n"
-    # "java-ide-customization"
-    "javascript-debugger"
-    "javascript-intentions"
-    "javascript-plugin"
-    "JPA"
-    "JPA Model"
-    # "json"
-    "jsonpath" # ?
-    "junit"
-    "jupyter-plugin"
-    "karma"
-    "keymap-eclipse"
-    "keymap-netbeans"
-    "keymap-visualStudio"
-    # "Kotlin"
-    "kotlin-jupyter-plugin"
-    "ktor"
-    "less"
-    "liquibase"
-    "localization-ja"
-    "localization-ko"
-    "localization-zh"
-    "lombok"
-    # "markdown"
-    "maven"
-    "mcpserver"
-    "micronaut"
-    "microservices-jvm"
-    "microservices-plugin"
-    "nextjs"
-    "nodeJS"
-    "nodeJS-remoteInterpreter"
-    "notebooks-plugin"
-    "packageChecker"
-    # "performanceTesting"
-    # "performanceTesting-async"
-    "platform-ijent-impl"
-    # "platform-images"
-    "postcss"
-    "prettierJS"
-    # "profiler-lineProfiler"
-    "properties" # ?
-    "protoeditor" # ?
-    "qodana"
-    "quarkus"
-    "react"
-    "reactivestreams-core"
-    "remote-dev-server"
-    "remoteRun" # ?
-    "repository-search"
-    "restClient"
-    "sass-plugin"
-    # "searchEverywhereMl"
-    # "settingsSync"
-    "sh-plugin" # ?
-    "Spring"
-    "spring-boot-cloud"
-    "spring-boot-core"
-    "spring-boot-initializr"
-    "spring-data"
-    "spring-integration-core"
-    "spring-messaging"
-    "spring-modulith"
-    "spring-mvc-impl"
-    "spring-security"
-    "station-plugin"
-    "styled-components"
-    "stylelint"
-    "swagger"
-    "tailwindcss"
-    "tasks" # ?
-    "tasks-timeTracking"
-    # "terminal"
-    "testng"
-    "textmate-plugin"
-    "thymeleaf-plugin"
-    "toml" # ?
-    "tslint"
-    # "turboComplete"
-    # "ultimate-plugin"
-    # "uml"
-    # "vcs-git" #* only updated in bundled builds
-    "vcs-git-commit-modal"
-    "vcs-github" # ?
-    "vcs-hg"
-    "vcs-perforce"
-    "vcs-svn"
-    "velocity"
-    "vitejs"
-    "vuejs-plugin"
-    "webComponents"
-    "webDeployment"
-    "webpack"
-    "xml-refactoring"
-    "xpath"
-    "yaml" # ?
+  #! Hopefully switching from excludes to includes won't cause problems later
+  bundledOnlyPlugins ? {
+    # "com.intellij" = "../lib";
+    "com.intellij.modules.ultimate" = "ultimate-plugin";
 
-    # Contains list of _all_ bundled plugins, IJ tries
-    # to load them then complains about class not found
-    "plugin-classpath.txt"
+    "ByteCodeViewer" = "java-byteCodeViewer";
+    "org.jetbrains.debugger.streams" = "java-debugger-streams";
+    "org.jetbrains.java.decompiler" = "java-decompiler";
+
+    "com.android.tools.gradle.dcl" = "android-gradle-declarative-lang-ide";
+    "org.jetbrains.idea.gradle.dsl" = "android-gradle-dsl";
+    "com.intellij.compose" = "compose-ide-plugin";
+
+    "Git4Idea" = "vcs-git";
+    # "com.intellij.aop" = "aopCommon";
+    "com.intellij.diagram" = "uml";
+    "intellij.grid.plugin" = "grid-plugin";
+    "com.intellij.platform.images" = "platform-images";
+    "com.intellij.stats.completion" = "statsCollector";
+    "com.jetbrains.performancePlugin" = "performanceTesting";
+    "com.jetbrains.performancePlugin.async" = "performanceTesting-async";
+    "org.intellij.groovy.live.templates" = "groovy-live-templates";
+    "org.intellij.plugins.markdown" = "markdown";
+
+    # "com.intellij.ja" = "localization-ja";
+    # "com.intellij.ko" = "localization-ko";
+    # "com.intellij.zh" = "localization-zh";
+
+    # "com.intellij.jpa.jpb.model" = "JPA Model";
+    # "com.intellij.jsp" = "javaee-jsp-base-impl";
+    # "com.intellij.persistence" = "javaee-persistence-impl";
+    # "com.intellij.microservices.jvm" = "microservices-jvm";
+    # "org.jetbrains.idea.eclipse" = "eclipse";
+    "org.jetbrains.plugins.textmate" = "textmate-plugin";
+
+    # "com.jetbrains.codeWithMe" = "cwm-plugin";
+    "com.jetbrains.gateway" = "gateway-plugin";
+    # "com.jetbrains.station" = "station-plugin";
+    "intellij.platform.ijent.impl" = "platform-ijent-impl";
+
+    #? <essential-plugin>s in IdeaApplicationInfo.xml,
+    #? IDE will artificially not run without them.
+    "com.intellij.java" = "java";
+    "com.intellij.java.ide" = "java-ide-customization";
+    "com.intellij.modules.json" = "json";
+
+    #! Set registry kotlin.k2.only.bundled.compiler.plugins.enabled	to false
+    # "org.jetbrains.kotlin" = "Kotlin"; # ? seems ok
+    "org.intellij.groovy" = "Groovy";
+    "com.intellij.properties" = "properties"; # ! Needed by Groovy
+  },
+
+  topLevelDirs ? [
+    "bin"
+    "lib"
+    "modules"
+    "product-info.json"
   ],
+
+  withCppDeps ? true,
+  clang,
+  clazy,
+  # lldb,
+  # gdb,
+
+  hasGdbWithBundledPython ? withCppDeps,
+  python312,
+  openssl,
+  libxcrypt-legacy,
+
+  iUsedTheWrapperCorrectly ? false,
 }:
 
-#! http://localhost:63342/api/installPlugin?action=install&pluginIds=[com.intellij.configurationScript,com.intellij.modules.ultimate]
-
+assert iUsedTheWrapperCorrectly;
 stdenv.mkDerivation rec {
 
-  # !NOTE: Removed wrapper, so unwrapped.nix is unusable alone
-  pname = "idea-IU-unwrapped";
-
-  version = "2025.3";
-  buildNumber = "253.28294.334";
+  #! NOTE: Cannot be used without the wrapper!
+  pname = "idea-unwrapped";
+  version = "2026.1-eap5";
+  passthru.buildNumber = "261.21525.39";
 
   dontUnpack = true;
   src = fetchurl {
-    url = "https://download.jetbrains.com/idea/ideaIU-${version}.tar.gz";
-    hash = "sha256-E/QXS6FsHO8EhxyyYUM1NtACWGwmmoCTksIO4/lJWfU=";
+    url = "https://download.jetbrains.com/idea/idea-${passthru.buildNumber}.tar.gz";
+    hash = "sha256-UVyg0zm3xkEJ3lU1eOT6HtyFqA0owfNmkS/jlKRA+O4=";
   };
 
   nativeBuildInputs = [ autoPatchelfHook ];
 
   # from buildIdea
   buildInputs = [
-    stdenv.cc.cc
-    musl
-    # lldb
+    stdenv.cc.cc.lib
 
-    # skiko renderer
+    # > skiko renderer
     fontconfig
     libGL
-    # xorg.libX11
+
+    #? Used for storing and retrieving passwords.
+    lttng-ust_2_12
   ]
-  # CLion and RustRover
-  ++ lib.optionals false [
-    python3
+  ++ lib.optionals hasGdbWithBundledPython [
+    python312
     openssl
     libxcrypt-legacy
-    lttng-ust_2_12
   ];
 
   autoPatchelfIgnoreMissingDeps = [ "libX11.so.6" ];
 
-  installPhase = ''
-    runHook preInstall
+  installPhase =
+    let
+      bashJoin = lib.concatStringsSep ",";
+    in
+    ''
+      mkdir -p $out
+      cd $out || exit 1
 
-    mkdir -p $out
-    tar --gzip    \
-      -f $src       \
-      --extract       \
-      -C $out           \
-      --show-omitted-dirs \
-      --strip-components=1  \
-      --exclude-from <(
-        echo "${lib.concatStringsSep "\nidea-IU-${buildNumber}/plugins/" removedPlugins}"
-      ) \
-      idea-IU-${buildNumber}/{bin,lib,modules,plugins,product-info.json}/
+      tar -xzf $src --strip-components=1 \
+        --wildcards --no-wildcards-match-slash \
+        \
+        'idea-IU-*'/{${bashJoin topLevelDirs}} \
+        \
+        'idea-IU-*'/plugins/{${bashJoin (lib.attrValues bundledOnlyPlugins)}}
 
-    cd $out
+      # TODO: Recreate removed sh's (format inspect ltedit)
+      rm -vf bin/{idea,*.sh}
+      # JetBrains Client is part of Code With Me / Remote Development
+      # rm -vf bin/{jetbrains_client*,remote-dev-server*}
 
-    # ! NEW CLION
-    if false; then
+      ln -s ${libdbusmenu}/lib/libdbusmenu-glib.so bin/libdbm.so
+      ln -sf ${lib.getExe fsnotifier} bin/fsnotifier
+    ''
+    + lib.optionalString withCppDeps ''
+      mkdir -p bin/clang/linux/x64/bin
+      ln -s ${clang}/bin/{clang,clangd,clang-format,clang-tidy} bin/clang/linux/x64/bin/
+      ln -s ${clazy}/bin/clazy bin/clang/linux/x64/bin/clazy-standalone
+    '';
 
-    for dir in $out/clion/plugins/clion-radler/DotFiles/linux-*; do
-      rm -rf $dir/dotnet
-      ln -s ''${dotnet-sdk}/share/dotnet $dir/dotnet
-    done
-
-    # postFixup
-    ls -d \
-      $out/*/bin/*/linux/*/lib/liblldb.so \
-      $out/*/bin/*/linux/*/lib/python3.8/lib-dynload/* \
-      $out/*/plugins/*/bin/*/linux/*/lib/liblldb.so \
-      $out/*/plugins/*/bin/*/linux/*/lib/python3.8/lib-dynload/* |
-    xargs patchelf \
-      --replace-needed libssl.so.10 libssl.so \
-      --replace-needed libssl.so.1.1 libssl.so \
-      --replace-needed libcrypto.so.10 libcrypto.so \
-      --replace-needed libcrypto.so.1.1 libcrypto.so \
-      --replace-needed libcrypt.so.1 libcrypt.so
-
-    # DONE
-    fi;
-
-
-    # They ship two versions of the kotlin compiler
-    # Maybe we can simply workaround that
-    # TODO: Test
-    # ln -s kotlinc.ide plugins/Kotlin/kotlinc
-
-    # TODO: Recreate removed sh's (format inspect ltedit)
-    rm -f bin/{fsnotifier,idea,*.sh}
-    # JetBrains Client is part of Code With Me
-    rm -f bin/{jetbrains_client*,remote-dev-server*}
-
-    # The remaining code is part of the original script
-
-    # Moved to wrapper env
-    # Allegedly used by Remote Gateway
-    # ln -s ''${jbr.home} jbr
-
-    ln -s ${libdbusmenu}/lib/libdbusmenu-glib.so bin/libdbm.so
-    ln -s ${fsnotifier}/bin/fsnotifier bin/fsnotifier
-
-    runHook postInstall
-  '';
+  # TODO: needed or simply handled by autoPatchelfHook? i dont see why not
+  #  postFixup = lib.optionalString withCppDeps ''
+  #    ls -d \
+  #      $out/*/bin/*/linux/*/lib/liblldb.so \
+  #      $out/*/bin/*/linux/*/lib/python3.8/lib-dynload/* \
+  #      $out/*/plugins/*/bin/*/linux/*/lib/liblldb.so \
+  #      $out/*/plugins/*/bin/*/linux/*/lib/python3.8/lib-dynload/* |
+  #    xargs patchelf \
+  #      --replace-needed libssl.so.10 libssl.so \
+  #      --replace-needed libssl.so.1.1 libssl.so \
+  #      --replace-needed libcrypto.so.10 libcrypto.so \
+  #      --replace-needed libcrypto.so.1.1 libcrypto.so \
+  #      --replace-needed libcrypt.so.1 libcrypt.so
+  #  '';
 }
 
 # plugins = callPackage ./plugins { } // {

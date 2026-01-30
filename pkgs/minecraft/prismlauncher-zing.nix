@@ -13,25 +13,23 @@
   udev,
   vulkan-loader,
 
-  glfw-minecraft-wayland,
-  zing-jre,
+  glfw-wayland,
+  azul-zing,
 }:
 
-let
-  prismlauncher' = prismlauncher-unwrapped.override { };
-in
-
 symlinkJoin {
-  name = "prismlauncher-zing-${prismlauncher'.version}";
+  pname = "prismlauncher-zing";
+  inherit (prismlauncher-unwrapped) version;
 
-  paths = [ prismlauncher' ];
+  paths = [ prismlauncher-unwrapped ];
 
   nativeBuildInputs = [ kdePackages.wrapQtAppsHook ];
 
-  buildInputs = [
-    kdePackages.qtbase
-    kdePackages.qtsvg
-    kdePackages.qtwayland
+  buildInputs = with kdePackages; [
+    qtbase
+    qtimageformats
+    qtsvg
+    qtwayland
   ];
 
   postBuild = ''
@@ -43,7 +41,7 @@ symlinkJoin {
       runtimeLibs = [
         (lib.getLib stdenv.cc.cc)
         ## native versions
-        glfw-minecraft-wayland
+        glfw-wayland
         openal
 
         pipewire # openal
@@ -55,7 +53,7 @@ symlinkJoin {
       ];
 
       runtimePrograms = [
-        zing-jre # instead of PRISMLAUNCHER_JAVA_PATHS for nicer path
+        azul-zing # instead of PRISMLAUNCHER_JAVA_PATHS for nicer path
         pciutils # uses lspci
       ];
 
@@ -66,7 +64,7 @@ symlinkJoin {
     ];
 
   meta = {
-    inherit (prismlauncher'.meta)
+    inherit (prismlauncher-unwrapped.meta)
       homepage
       changelog
       license
