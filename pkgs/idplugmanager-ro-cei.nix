@@ -64,9 +64,7 @@ stdenv.mkDerivation rec {
       --replace-fail Icon=/usr Icon="$out/.usr"
 
     # Replace UTF-32LE encoded "/usr/" with ".usr/"
-    function utf32le() {
-      echo -n "$1" | sed -E 's|(.)|\1\\x00\\x00\\x00|g'
-    }
+    utf32le() { echo -n "$1" | sed -E 's|(.)|\1\\x00\\x00\\x00|g'; }
 
     _USR=$(utf32le "usr/")
     for file in .usr/{bin,lib}/idplugclassic/*; do

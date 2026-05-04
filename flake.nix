@@ -1,11 +1,11 @@
 {
   outputs =
-    { nixpkgs, ... }:
+    { self, nixpkgs, ... }:
     let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
     in
-    rec {
+    with nixpkgs.lib;
+    {
 
       # callPackage is a special call which adds a so-called
       # "scope" to the package function call, which is where
@@ -13,17 +13,14 @@
       # The default one from `nixpkgs` adds all `pkgs`, and
       # with `newScope` used in ${directory}, all its ----
       # packages are appended to the search path as well.
-      packages = pkgs.lib.packagesFromDirectoryRecursive {
+      packages = packagesFromDirectoryRecursive {
         inherit (pkgs) callPackage newScope;
         directory = ./pkgs;
       };
 
-      nixosModules = {
-        fprintd-fpc = import ./nixosModules/fprintd-fpc.nix;
-        ro-cei-pcsc = import ./nixosModules/ro-cei-pcsc.nix;
-      };
-
-      legacyPackages.${system} = packages;
+      nixosModules = concatMapAttrs (name: _: {
+        "${removeSuffix ".nix" name}" = import ./nixosModules/${name};
+      }) (builtins.readDir ./nixosModules);
 
       # TODO: STDENV DEFAULT
       stripDebugFlags = [

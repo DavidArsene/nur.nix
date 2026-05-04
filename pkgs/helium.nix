@@ -7,11 +7,11 @@
 
 appimageTools.wrapType2 rec {
   pname = "helium";
-  version = "0.10.0.1";
+  version = "0.12.0.2";
 
   src = fetchurl {
     url = "${meta.homepage}/releases/download/${version}/helium-${version}-x86_64.AppImage";
-    hash = "";
+    hash = "sha256-1iU+hhisAPF2hAgfFob6Oe54JXjwb6uftiERa4t+OoE=";
   };
 
   extraInstallCommands =

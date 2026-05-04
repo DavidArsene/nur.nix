@@ -27,7 +27,7 @@
   # security.pam.p11.control = "sufficient";
 
   environment.systemPackages = with pkgs; [
-    self.packages.idplugmanager-ro-cei
+    # self.packages.idplugmanager-ro-cei
     nss_latest.tools # modutil
     opensc
     pcsc-tools # pcsc_scan

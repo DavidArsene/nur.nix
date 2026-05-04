@@ -2,7 +2,7 @@
   lib,
   callPackage,
   writeShellScriptBin,
-  stdenv,
+  stdenvNoCC,
   makeDesktopItem,
   jq,
 
@@ -27,19 +27,16 @@
   extraPackages ? [ ],
   extraProperties ? { },
   extraArgs ? [ ],
+
+  package ? callPackage ./idea-unwrapped.nix {
+    iUsedTheWrapperCorrectly = true;
+  },
 }:
 
 # TODO: sudo sh -c 'echo 1 > /proc/sys/kernel/perf_event_paranoid'
 # sudo sh -c 'echo 0 > /proc/sys/kernel/kptr_restrict'
 
 let
-  # TODO: plugins from CLion:
-  # diff -d \
-  #   (jq -r .bundledPlugins[] idea-*/product-info.json | sort | psub) \
-  #   (jq -r .bundledPlugins[] clion-*/product-info.json | sort | psub) | rg '>'
-
-  app = callPackage ./idea-unwrapped.nix { iUsedTheWrapperCorrectly = true; };
-
   #? Moved here everything from the old postPatch
   #? combined with the original bin/idea.sh
   #? And turned the script wrapper around a script
@@ -47,7 +44,7 @@ let
   launcherEnv = {
 
     #? Used in product-info.json
-    IDE_HOME = app;
+    IDE_HOME = package;
 
     LD_LIBRARY_PATH = lib.makeLibraryPath [
       libGL
@@ -59,7 +56,7 @@ let
     M2_HOME = "${mvn'}/maven";
     M2 = "${mvn'}/maven/bin";
 
-    #? clion-radler's dotnet
+    #? clion-radler's dotnet FIXME:
     DOTNET_SYSTEM_GLOBALIZATION_INVARIANT = "1";
   };
 
@@ -92,7 +89,7 @@ let
   ++ extraArgs;
 
   launcherBin = writeShellScriptBin "idea.sh" ''
-    _LAUNCH_META="$(${lib.getExe jq} .launch[0] ${app}/product-info.json)"
+    _LAUNCH_META="$(${lib.getExe jq} .launch[0] ${package}/product-info.json)"
     getMeta() { ${lib.getExe jq} -r ".$1" <<< "$_LAUNCH_META"; }
 
     ${lib.toShellVars launcherEnv}
@@ -115,13 +112,13 @@ let
   '';
 in
 
-stdenv.mkDerivation rec {
+stdenvNoCC.mkDerivation rec {
   pname = "jetbrains-idea";
-  inherit (app) version buildNumber;
+  inherit (package) version;
 
   meta = {
-    homepage = "https://www.jetbrains.com/idea/";
-    description = "${version} ${buildNumber}";
+    homepage = "https://www.jetbrains.com/idea";
+    description = version;
     teams = [ lib.teams.jetbrains ];
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
@@ -145,9 +142,9 @@ stdenv.mkDerivation rec {
 
     ln -s ${lib.getExe launcherBin} $out/bin/idea
 
-    ln -s "${app}/bin/idea.png" $out/share/pixmaps/${pname}.png
-    ln -s "${app}/bin/idea.svg" $out/share/pixmaps/${pname}.svg
-    ln -s "${app}/bin/idea.svg" $out/share/icons/hicolor/scalable/apps/${pname}.svg
+    ln -s "${package}/bin/idea.png" $out/share/pixmaps/${pname}.png
+    ln -s "${package}/bin/idea.svg" $out/share/pixmaps/${pname}.svg
+    ln -s "${package}/bin/idea.svg" $out/share/icons/hicolor/scalable/apps/${pname}.svg
     ln -s "${desktopItem}/share/applications" $out/share
   '';
 }

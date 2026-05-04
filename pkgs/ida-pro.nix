@@ -1,13 +1,20 @@
 {
   ida-free,
   requireFile,
-  python3Minimal,
+  python313,
+  #libxcrypt,
+  libxcrypt-legacy,
 }:
 
+let
+  # https://github.com/msanft/ida-pro-overlay/blob/main/packages/ida-pro.nix
+  #idapy = python3.withPackages (ps: with ps; [ rpyc ]);
+in
+
 # Everything in ida-free applies here as well
-ida-free.overrideAttrs (oldAttrs: rec {
+(ida-free.overrideAttrs (oldAttrs: rec {
   pname = "ida-pro";
-  version = "9.3";
+  version = "9.3sp1";
 
   src = requireFile rec {
     message = ''
@@ -20,33 +27,54 @@ ida-free.overrideAttrs (oldAttrs: rec {
       ${hash}
     '';
     name = "ida-pro_93_x64linux.run";
-    hash = "sha256-LtQ65LuE103K5vAJkhDfqNYb/qSVL1+aB6mq4Wy3D4I=";
+    hash = "sha256-CVv1EUt2RSNqHuQ7ZfZKyn2jM368bn+XmQd9tvWM0wc=";
   };
 
   # Bugfix
-  autoPatchelfIgnoreMissingDeps = oldAttrs.autoPatchelfIgnoreMissingDeps ++ [
-    "libQt6WaylandCompositor.so.6"
+  runtimeDependencies = oldAttrs.runtimeDependencies ++ [
+    #"libcrypt.so.1" # FIXME:
+    #"libxcrypt.so.1" # FIXME:
+    python313
+    #libxcrypt
+    libxcrypt-legacy
   ];
 
-  # The python path to use is stored in $HOME/.idapro/ida.reg, which
-  # uses the Windows registry format (iiuc) thus isn't easily editable.
-  # So, without simpler ways of changing it, or having a default
-  # reg file in the install dir, I had to do this at runtime.
+  #qtWrapperArgs = [
+  # ''--run "$out/opt/*/idapyswitch -s ${idapy}/lib/libpython3.*.so"''
+  #"--prefix PATH : ${idapy}/bin"
+  #];
+
   preFixup = ''
-    qtWrapperArgs+=(
-      --run
-      "$out/opt/*/idapyswitch -s ${python3Minimal}/lib/libpython3.*.so"
-    )
-  '';
-
-  postFixup = ''
     IDADIR=$out/opt/${pname}-${version}
-    pushd $IDADIR
 
-    echo 'Categories=Development;' >> $out/share/applications/com.hex_rays.IDA.pro.*.desktop
+    # ida-pro-overlay start
+    for lib in $IDADIR/*.so $IDADIR/*.so.6; do
+      ln -sf $lib $out/lib/$(basename $lib)
+    done
+
+    #patchelf --add-needed libpython3.13.so $out/lib/libida.so
+    #patchelf --add-needed libsecret-1.so.0 $out/lib/libida.so
+    # ida-pro-overlay end
+    #patchelf --add-needed libxcrypt.so.1 $out/lib/libida.so
+    patchelf --replace-needed libxcrypt.so.1 libcrypt.so.1 $out/lib/libida.so
+
+    echo -e 'Categories=Development;\nStartupWMClass=IDA;' \
+      >> $out/share/applications/com.hex_rays.IDA.pro.*.desktop
+
+    pushd $IDADIR
     cp ida.hlp $out/lib/
     rm -v cfg/pic*.cfg
     rm -v ?ninstall*
     rm -r docs/
   '';
-})
+})).override
+  {
+    hexPatches = [
+      {
+        filename = "libida.so";
+        from = "edfd425c";
+        to = "edfd42cb";
+        assertCount = 2;
+      }
+    ];
+  }

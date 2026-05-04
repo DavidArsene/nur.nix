@@ -1,13 +1,13 @@
 {
   fetchurl,
-  fetchFromGithub,
+  fetchFromGitHub,
 
   jadx,
+  stdenvNoCC,
   librsvg,
   copyDesktopItems,
-
-  jetbrains,
-  jdk ? jetbrains.jdk-no-jcef,
+  makeDesktopItem,
+  unzip,
 
   jre_minimal,
   # TODO: untested
@@ -28,28 +28,43 @@
   },
   quark-engine,
 }:
-jadx.overrideAttrs rec {
-  version = "1.5.5";
+stdenvNoCC.mkDerivation rec {
+  pname = "jadx-bin";
+  version = jadx.version;
 
   src = fetchurl {
-    url = "https://github.com/skylot/jadx/releases/download/v${version}/jadx-${version}.zip";
+    url = "${meta.homepage}/releases/download/v${version}/jadx-${version}.zip";
     hash = "sha256-OKV2bTyBcMQVZrSxPqDt4kMOMAhCGvSScjXCiAI01Ro=";
   };
 
-  logos = fetchFromGithub {
+  logos = fetchFromGitHub {
     owner = "skylot";
     repo = "jadx";
-    rev = version;
-    hash = "sha256-OKV2bTyBcMQVZrSxPqDt4kMOMAhCGvSScjXCiAI01Ro=";
+    rev = "v" + version;
+    hash = "sha256-MAkxJ/Q8+Oq2HVkXFtwqqj5JwPeyUjwDWREcNuRQX3U=";
 
     rootDir = "jadx-gui/src/main/resources/logos";
   };
 
-  patches = [ ];
-
   nativeBuildInputs = [
     librsvg
     copyDesktopItems
+    unzip
+  ];
+  sourceRoot = "."; # squash "unpacker produced multiple directories" error
+
+  desktopItems = [
+    (makeDesktopItem {
+      name = "jadx";
+      desktopName = "JADX";
+      exec = "jadx-gui";
+      icon = "jadx";
+      comment = meta.description;
+      categories = [
+        "Development"
+        "Utility"
+      ];
+    })
   ];
 
   installPhase = ''
@@ -58,9 +73,10 @@ jadx.overrideAttrs rec {
 
     for prog in jadx jadx-gui; do
       cp bin/$prog $out/bin
+      chmod +x $out/bin/$prog
 
       substituteInPlace $out/bin/$prog \
-        --replace-fail '$JAVA_HOME' "${jdk.home}"
+        --replace-fail '$JAVA_HOME' "${jre.home}"
     done
 
     for size in 16 32 48; do
@@ -74,4 +90,9 @@ jadx.overrideAttrs rec {
     done
 
   '';
+
+  meta = {
+    description = "Dex to Java decompiler";
+    homepage = "https://github.com/skylot/jadx";
+  };
 }
