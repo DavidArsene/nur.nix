@@ -34,6 +34,8 @@ stdenvNoCC.mkDerivation {
   };
 
   installPhase = ''
+    set -euo pipefail
+
     mkdir -p "$out/lib/firmware"
     cp -r -t "$out/lib/firmware" ./*
 

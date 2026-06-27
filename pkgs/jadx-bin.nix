@@ -11,6 +11,7 @@
 
   jre_minimal,
   # TODO: untested
+  # TODO https://docs.oracle.com/en/java/javase/17/docs/specs/man/jlink.html
   jre ? jre_minimal.override {
     modules = [
       "java.base"
@@ -26,11 +27,10 @@
     ];
     # TODO: --include-locales
   },
-  quark-engine,
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "jadx-bin";
-  version = jadx.version;
+  inherit (jadx) version;
 
   src = fetchurl {
     url = "${meta.homepage}/releases/download/v${version}/jadx-${version}.zip";

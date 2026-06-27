@@ -18,29 +18,23 @@
   libnotify,
   udev,
 
-  jetbrains,
-  jbr' ? jetbrains.jdk-no-jcef,
+  jetbrains ? null,
+  jbr' ? jetbrains.jdk, # -no-jcef,
 
-  maven,
-  mvn' ? maven.override { jdk_headless = jbr'; },
+  # maven,
+  # mvn' ? maven.override { jdk_headless = jbr'; },
 
   extraPackages ? [ ],
   extraProperties ? { },
   extraArgs ? [ ],
 
-  package ? callPackage ./idea-unwrapped.nix {
-    iUsedTheWrapperCorrectly = true;
-  },
+  package ? callPackage ./idea-unwrapped.nix { iUsedTheWrapperCorrectly = true; },
 }:
 
 # TODO: sudo sh -c 'echo 1 > /proc/sys/kernel/perf_event_paranoid'
 # sudo sh -c 'echo 0 > /proc/sys/kernel/kptr_restrict'
 
 let
-  #? Moved here everything from the old postPatch
-  #? combined with the original bin/idea.sh
-  #? And turned the script wrapper around a script
-  #? into a biblically accurate launcher
   launcherEnv = {
 
     #? Used in product-info.json
@@ -53,16 +47,14 @@ let
     ];
 
     JAVA_HOME = jbr'.home;
-    M2_HOME = "${mvn'}/maven";
-    M2 = "${mvn'}/maven/bin";
-
-    #? clion-radler's dotnet FIXME:
-    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT = "1";
+    # M2_HOME = "${mvn'}/maven";
+    # M2 = "${mvn'}/maven/bin";
   };
 
   properties = extraProperties // {
     "jb.vmOptionsFile" = "$IDE_HOME/$(getMeta vmOptionsFilePath)";
     "awt.toolkit.name" = "WLToolkit";
+    "nosplash" = "false"; # Force splash screen on Wayland
     "jna.library.path" = lib.makeLibraryPath [
       libsecret
       e2fsprogs
@@ -93,6 +85,9 @@ let
     getMeta() { ${lib.getExe jq} -r ".$1" <<< "$_LAUNCH_META"; }
 
     ${lib.toShellVars launcherEnv}
+
+    #? clion-radler's dotnet
+    export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
     export PATH+=":${
       lib.makeBinPath (

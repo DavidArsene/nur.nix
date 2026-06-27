@@ -44,7 +44,7 @@ stdenv.mkDerivation rec {
 
   #! NOTE: Cannot be used without the wrapper!
   pname = "idea-unwrapped";
-  version = "2026.1.1";
+  version = "262.7132.23";
 
   dontUnpack = true;
   src = fetchurl {
@@ -142,7 +142,3 @@ stdenv.mkDerivation rec {
   #      --replace-needed libcrypt.so.1 libcrypt.so
   #  '';
 }
-
-# plugins = callPackage ./plugins { } // {
-#   __attrsFailEvaluation = true;
-# };

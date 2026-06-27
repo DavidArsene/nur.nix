@@ -5,19 +5,19 @@ shopt -s failglob
 
 # PRODUCTS=(DG) # RD)
 # NB: idea should be first for best compatibility
-PRODUCTS_MAVEN=(idea clion studio)
-# pycharm: only dataWrangler and pyscript + customization
-# datagrip: not on maven, has one (1) plugin i don't remember
-# android-studio: still on 253, TODO
-# riderRD: different artifact name on maven, also very different from other IJPLs.
-# no new plugins: webstorm, rustrover
-# idc about: goland, phpstorm, rubymine
-# clion bin:
-# - helpers
-# - ${(linux/amd64)? if multiplatform zip} + /native-helper/intellij-rust-native-helper
-# - lldb/helpers
+PRODUCTS_MAVEN=(idea clion) # studio)
+ # pycharm: only dataWrangler and pyscript + customization
+ # datagrip: not on maven, has one (1) plugin i don't remember
+ # android-studio: still on 253, TODO
+ # riderRD: different artifact name on maven, also very different from other IJPLs.
+ # no new plugins: webstorm, rustrover
+ # idc about: goland, phpstorm, rubymine
+ # clion bin:
+ # - helpers
+ # - ${(linux/amd64)? if multiplatform zip} + /native-helper/intellij-rust-native-helper
+ # - lldb/helpers
 
-MAVEN_BASE='https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij'
+MAVEN_BASE='https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij'
 
 BLACKLIST=(
 	'localization-*'
@@ -67,6 +67,9 @@ first(
 
 		local url="$MAVEN_BASE/$code/$code/maven-metadata.xml"
 		version="$(xh -F "$url" | yq -p xml .metadata.versioning.latest)"
+
+		version="${version%-CANDIDATE}"
+		version="${version%-SNAPSHOT}"
 
 		echo "$MAVEN_BASE/$code/$code/$version/$code-$version.zip"
 	fi
