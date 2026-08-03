@@ -2,7 +2,6 @@
   fetchurl,
   fetchFromGitHub,
 
-  jadx,
   stdenvNoCC,
   librsvg,
   copyDesktopItems,
@@ -30,11 +29,12 @@
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "jadx-bin";
-  inherit (jadx) version;
+  version = "1.5.6";
+  # inherit (jadx) version;
 
   src = fetchurl {
     url = "${meta.homepage}/releases/download/v${version}/jadx-${version}.zip";
-    hash = "sha256-OKV2bTyBcMQVZrSxPqDt4kMOMAhCGvSScjXCiAI01Ro=";
+    hash = "sha256-VF6ivpwkJRG8FFdVz0vaJIWt5Clm4Jb4tNPaKiMOiXQ=";
   };
 
   logos = fetchFromGitHub {

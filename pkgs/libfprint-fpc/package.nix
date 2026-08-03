@@ -1,9 +1,5 @@
 {
-  autoPatchelfHook,
   fetchzip,
-  stdenvNoCC,
-
-  pkgs,
   libfprint,
   ...
 }:
@@ -42,34 +38,5 @@ let
     '';
   });
 
-  #! Earlier attempt to use the provided libfprint-2.so as well
-  #! > Run-time dependency libfprint-2 found: NO (tried pkgconfig)
-  #! Kept just in case
-
-  libfprint-fpc-prebuilt = stdenvNoCC.mkDerivation {
-    pname = "libfprint-fpc";
-    version = "2.0.0";
-    src = fpcbep;
-
-    buildInputs = with pkgs; [
-      glib
-      gusb
-      pixman
-      nss
-      libgudev
-    ];
-    nativeBuildInputs = [ autoPatchelfHook ];
-
-    installPhase = ''
-      install -D -t "$out/lib" "${fpc-driver-base}/libfpcbep.so"
-      install -D -t "$out/lib" "${libfprint-base}/usr/lib/x86_64-linux-gnu/libfprint-2.so.2.0.0"
-
-      ln -s "libfprint-2.so.2.0.0" "$out/lib/libfprint-2.so.2"
-      ln -s "libfprint-2.so.2" "$out/lib/libfprint-2.so"
-
-      rules="lib/udev/rules.d/60-libfprint-2-device-fpc.rules"
-      install -Dm644 -t "$out/lib" "${libfprint-base}/$rules"
-    '';
-  };
 in
 libfprint-fpc

@@ -1,0 +1,51 @@
+"toolmanifest.vdf"
+{
+    "manifest"
+    {
+        "version" ""
+        "commandline" ""
+        "commandline_getcompatpath" ""
+        "commandline_waitforexitandrun" ""
+        "require_tool_appid" ""
+        "unlisted" ""
+        "use_tool_subprocess_reaper" ""
+        "compatmanager_layer_name" ""
+        "filter_exclusive_priority" ""
+    // "commandline_getnativepath" ""
+    // "use_sessions" ""
+    }
+}
+"compatibilitytool.vdf"
+{
+    "compatibilitytools"
+    {
+        "compat_tools"
+        {
+            "display_name" ""
+            "install_path" ""
+            "appid" ""
+            "depotid" ""
+            "depotsize_mb" ""
+            "from_oslist" ""
+            "to_oslist" ""
+            "require_tool_appid" ""
+            "unlisted" ""
+            "aliases" ""
+        }
+        "app_mappings"
+        {
+            "platform" ""
+            "appid" ""
+            "tool" ""
+            "config" ""
+            "priority" ""
+        }
+        "app_compat_configs"
+        {
+            "appid" ""
+            "config" ""
+            "environment" ""
+            "dtst1_compat_category" ""
+        }
+    }
+}

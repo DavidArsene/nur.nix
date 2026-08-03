@@ -1,5 +1,5 @@
 {
-  python313,
+  python314,
   qt6,
   gtk3,
   libsecret,
@@ -10,48 +10,28 @@
   libxcrypt-legacy,
   copyDesktopItems,
   makeDesktopItem,
-  fetchPypi,
-  fetchurl,
+  hcli,
 
   lib,
   ...
 }:
 let
-  pythonForIDA = python313.withPackages (
-    ps:
-    let
-      fetchPythonWheel =
-        pname: version: hash:
-        ps.buildPythonPackage rec {
-          inherit pname version;
-          format = "wheel";
+  pythonForIDA = python314.withPackages (
+    ps: with ps; [
+      ida-hcli
+      ida-settings
 
-          src = fetchPypi {
-            dist = "py3";
-            python = "py3";
-            format = "wheel";
-            inherit pname version hash;
-          };
-
-          pythonRemoveDeps = [ "ida-hcli" ];
-        };
-
-    in
-    with ps;
-    [
       rpyc
       unicorn
       # pybinwalk
-
-      # (fetchPythonWheel "ida_hcli" "0.17.5" "sha256-ZxCAY5mr5QT5LZgN5+NsNFGyIiQ5HT8JUHz9W62XwXc=")
-      # (fetchPythonWheel "ida_settings" "3.3.0" "sha256-6WGDhT0VoJLRFinE6UsJYkxBf6eX2srA9Kt8na18d9g=")
-
     ]
   );
 in
+
+# cc needed for $NIX_CC/nix-support/dynamic-linker
 stdenv.mkDerivation rec {
   pname = "ida-pro";
-  version = "9.3sp1";
+  version = "9.4.260714";
 
   src = requireFile rec {
     message = ''
@@ -63,18 +43,9 @@ stdenv.mkDerivation rec {
       The hash should match this:
       ${hash}
     '';
-    name = "ida-pro_93_x64linux.run";
-    hash = "sha256-CVv1EUt2RSNqHuQ7ZfZKyn2jM368bn+XmQd9tvWM0wc=";
+    name = "ida-pro_94_x64linux.run";
+    hash = "sha256-6rtkw8hJ04WHWVWDWenOvPF+KpG8xgUjUz34uERiqlQ=";
   };
-
-  hcli-bin =
-    let
-      rev = "0.17.5";
-    in
-    fetchurl {
-      url = "https://github.com/HexRaysSA/ida-hcli/releases/download/v${rev}/hcli-linux-x86_64-${rev}";
-      hash = "sha256-jPO8s9nOFk5iGgjuk0xqNiph2wYQ7jnetv6NA5e0yZ0=";
-    };
 
   nativeBuildInputs = [
     makeWrapper
@@ -133,20 +104,18 @@ stdenv.mkDerivation rec {
     rm -r opt/docs/
 
     #! Patch
-    # 0x5C just so happens to represent "\", and guess what
-    # it's converted first then parsed in the regex
-    # before='\xED\xFD\x42\x5C'
-
-    before='\xED\xFD\x42\\'
-    after='\xED\xFD\x42\xCB'
+    before='29f4481f796f9f66f2ff13cc4ab5b54f60845db603ba2c0bac8a9bc4b6cbdefc5c62bfc2f5ee850ac45ea97ad347e8b56dba5085af8c8aad9cc2ec626ca78a068006d658f68651da31a0a77c65a70ed73a40d53b08edd403c095aa0bcffa52f313ebcacaaa2ce5024a4e2b9aa70fc6092f38ae094d71e43f7690b5ddd3e9e4f7'
+    after='a107b71c8a08ba5350934f7cf6e81be3a24dc2e35f7200d80cbd70b37ed6811dd2146d3cb7e20ad19b2544c0ef14c5c66ffbbdf226ec3f3d544c04385303ca4a7179299340022f5d50948bcf8a60307e2c196329e51a5296dc419e40fef3ef7c6f015a09ebd979e79615338985643e666c14897f9f597e11f44341f496d56861'
 
     for file in opt/libida{,32}.so; do
       echo "Patching $file"
-      sed -i "s/$before/$after/g" $file
+      ${lib.getExe pythonForIDA} -c "import sys; data = open('$file', 'rb').read(); open('$file', 'wb').write(data.replace(bytes.fromhex('$before'), bytes.fromhex('$after')))"
     done
     #! End Patch
 
     cp -r opt/* $IDADIR/
+
+    ${lib.getExe pythonForIDA} -m compileall -s $IDADIR $IDADIR
 
     # Link the exported libraries to the output.
     for lib in $IDADIR/*.so; do # $IDADIR/*.so.6
@@ -154,7 +123,7 @@ stdenv.mkDerivation rec {
     done
 
     # Manually patch libraries that dlopen stuff.
-    patchelf --add-needed libpython3.13.so $out/lib/libida.so
+    patchelf --add-needed libpython3.14.so $out/lib/libida.so
     patchelf --add-needed libcrypto.so $out/lib/libida.so
     patchelf --add-needed libsecret-1.so.0 $out/lib/libida.so
 
@@ -163,18 +132,16 @@ stdenv.mkDerivation rec {
 
     # Link the binaries to the output.
     for bb in ida; do
-      wrapProgram $IDADIR/$bb \
-        --prefix IDADIR : $IDADIR \
-        --prefix PYTHONPATH : $IDADIR/idalib/python \
+      makeWrapper $IDADIR/$bb $out/bin/$bb \
+        --prefix PATH : ${lib.makeBinPath [ pythonForIDA ]} \
+        --set IDADIR $IDADIR \
         --set LUMINA_TLS 0 # for custom Lumina servers
-
-      ln -s $IDADIR/$bb $out/bin/$bb
+        # --set PYTHONVERBOSE 1
     done
 
-    cp ${hcli-bin} $IDADIR/hcli
-    chmod +x $IDADIR/hcli
-    wrapProgram $IDADIR/hcli --set HCLI_CURRENT_IDA_INSTALL_DIR $IDADIR
-    ln -s $IDADIR/hcli $out/bin/hcli
+    makeWrapper ${lib.getExe hcli} $out/bin/hcli \
+      --set HCLI_CURRENT_IDA_INSTALL_DIR $IDADIR \
+      --set HCLI_CURRENT_IDA_PYTHON_EXE ${lib.getExe pythonForIDA}
 
     install -m 444 -D $IDADIR/appico.png $out/share/icons/hicolor/128x128/apps/ida.png
 
@@ -184,7 +151,6 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "The world's smartest and most feature-full disassembler";
     homepage = "https://hex-rays.com/ida-pro/";
-    license = licenses.unfree;
     mainProgram = "ida";
     maintainers = with maintainers; [
       msanft

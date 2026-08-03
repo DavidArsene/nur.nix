@@ -31,26 +31,23 @@
   python312,
   openssl,
   libxcrypt-legacy,
-
-  iUsedTheWrapperCorrectly ? false,
 }:
 
 #! ---------------------------------------------------------------------
 #! Set registry kotlin.k2.only.bundled.compiler.plugins.enabled	to false
 #! ---------------------------------------------------------------------
 
-assert iUsedTheWrapperCorrectly;
 stdenv.mkDerivation rec {
 
   #! NOTE: Cannot be used without the wrapper!
   pname = "idea-unwrapped";
-  version = "262.7132.23";
+  version = "2026.2";
 
   dontUnpack = true;
   src = fetchurl {
     # version for releases, buildNumber for EAPs
     url = "https://download.jetbrains.com/idea/idea-${version}.tar.gz";
-    hash = "sha256-eljThvKi5ajNfkWRZXtP5ZmurCLZYMesz1+SeEZQe/s=";
+    hash = "sha256-qAVcre8abu1FWPi8m9WRw6STn0yMNFYP31irTSpceD0=";
   };
 
   nativeBuildInputs = [ autoPatchelfHook ];
@@ -118,7 +115,6 @@ stdenv.mkDerivation rec {
     # TODO:
     # - clang/linux/x64/{bin,include,lib}
     # - cmake/linux/x64/{bin,doc,share}
-
   ''
   + lib.optionalString withCidrDebuggers ''
     mkdir -p {lldb,gdb}/linux/x64/bin
@@ -126,19 +122,4 @@ stdenv.mkDerivation rec {
     # - lldb/linux/x64/{bin,lib,share}
     exit 1 # TODO
   '';
-
-  # TODO: needed or already handled by autoPatchelfHook? i dont see why not
-  #  postFixup = lib.optionalString withCidrCppDeps ''
-  #    ls -d \
-  #      $out/*/bin/*/linux/*/lib/liblldb.so \
-  #      $out/*/bin/*/linux/*/lib/python3.*/lib-dynload/* \
-  #      $out/*/plugins/*/bin/*/linux/*/lib/liblldb.so \
-  #      $out/*/plugins/*/bin/*/linux/*/lib/python3.*/lib-dynload/* |
-  #    xargs patchelf \
-  #      --replace-needed libssl.so.10 libssl.so \
-  #      --replace-needed libssl.so.1.1 libssl.so \
-  #      --replace-needed libcrypto.so.10 libcrypto.so \
-  #      --replace-needed libcrypto.so.1.1 libcrypto.so \
-  #      --replace-needed libcrypt.so.1 libcrypt.so
-  #  '';
 }

@@ -17,7 +17,8 @@ PRODUCTS_MAVEN=(idea clion) # studio)
  # - ${(linux/amd64)? if multiplatform zip} + /native-helper/intellij-rust-native-helper
  # - lldb/helpers
 
-MAVEN_BASE='https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij'
+# MAVEN_BASE='https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij'
+MAVEN_BASE='https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij'
 
 BLACKLIST=(
 	'localization-*'
@@ -32,7 +33,7 @@ BLACKLIST=(
 
 ESSENTIAL=(
 	'com.intellij.java'
-	'intellij.modules.json'
+	'com.intellij.modules.json'
 	'intellij.properties' # needed by Groovy
 )
 
@@ -144,7 +145,6 @@ for CODE in "${PRODUCTS_MAVEN[@]}"; do
 	# mv plugins "$CODE-plugins" 2>/dev/null || eko "${red_light}Got no plugins from $CODE$reset"
 done
 
-mv "${ROOT}"plugins/* plugins/
 eko
 fd aarch64
 fd darwin
