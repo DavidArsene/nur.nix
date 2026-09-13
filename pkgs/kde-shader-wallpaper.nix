@@ -13,13 +13,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kde-shader-wallpaper";
-  version = "4.0.0";
+  version = "4.1.1";
 
   src = fetchFromGitHub {
     owner = "y4my4my4m";
     repo = finalAttrs.pname;
     tag = "v${finalAttrs.version}";
-    hash = "sha256-avHuxE7TNALkMMErBcXwg+WOd7VBNFXXPS1aDvdCRlA=";
+    hash = "sha256-aHX0mxBgO0jh8la1L98y/LttcShGn8Q79c6Qfb0LPSU=";
   };
 
   cmakeBuildType = "Release";

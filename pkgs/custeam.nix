@@ -9,15 +9,22 @@
   extraProfile ? "", # string to append to profile
   extraPreBwrapCmds ? "", # extra commands to run before calling bubblewrap
   extraBwrapArgs ? [ ], # extra arguments to pass to bubblewrap (real default is at usage site)
-  extraArgs ? [ ], # arguments to always pass to steam
+  extraArgs ? [ ], # arguments to always pass to Steam
   extraEnv ? { }, # Environment variables to pass to Steam
 }:
+
+# "Legacy Steam Runtime" - 4690330 (actually scout)
+# "Steam Linux Runtime 1.0 (scout)" - 1070560 (runs scout inside soldier container)
+# "Steam Linux Runtime 2.0 (soldier)" - 1391110 (proper container based on Debian x)
+# "Steam Linux Runtime 3.0 (sniper)" - 1628350 (upgraded to Debian 11?)
+# "Steam Linux Runtime 4.0" [steamrt64] - 4183110 (Debian 13?)
+# "Steam Controller Configs - Secure Desktop" - 1235260
 let
   steam-run = buildFHSEnv (finalAttrs: {
     pname = "steam-run";
     inherit (steam-unwrapped) version;
 
-    multiArch = false;
+    multiArch = true;
     includeClosures = true;
     privateTmp = false;
 
@@ -31,7 +38,7 @@ let
         file
         lsb-release # not documented, called from Big Picture
         pciutils # not documented, complains about lspci on startup
-        glibc
+        glibc_multi.bin
         usbutils # not documented, complains about lsusb on startup (needed for the 'Enter VR Mode' button to appear)
         xdg-utils # calls xdg-open occasionally
         xz
@@ -50,6 +57,7 @@ let
       pkgs:
       with pkgs;
       [
+        glibc
         libxcrypt
         libGL
 
@@ -60,11 +68,10 @@ let
         libva
         vulkan-loader
 
-        libcap # not documented, required by srt-bwrap
-
+        # networkmanager
         # not documented, used for network status things in Big Picture
         # FIXME: figure out how to only build libnm?
-        networkmanager
+        libcap # not documented, required by srt-bwrap
       ]
       ++ extraLibraries pkgs;
 
@@ -80,10 +87,6 @@ let
       # [1] <https://github.com/libsdl-org/SDL/commit/8e2746cfb6e1f1a1da5088241a1440fd2535e321>
       export SDL_JOYSTICK_DISABLE_UDEV=1
 
-      # This is needed for IME (e.g. iBus, fcitx5) to function correctly on non-CJK locales
-      # https://github.com/ValveSoftware/steam-for-linux/issues/781#issuecomment-2004757379
-      export GTK_IM_MODULE='xim'
-
       # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#graphics-driver
       export LIBGL_DRIVERS_PATH=/run/opengl-driver/lib/dri
       export __EGL_VENDOR_LIBRARY_DIRS=/run/opengl-driver/share/glvnd/egl_vendor.d
@@ -94,9 +97,7 @@ let
       # See also: https://github.com/flathub/com.valvesoftware.Steam/blob/28481f09f33c12b6ac7421d13af9ed1523c54ec4/steam_wrapper/steam_wrapper.py#L160
       if [ -z ''${TZ+x} ]; then
         new_TZ="$(readlink -f /etc/localtime | grep -P -o '(?<=/zoneinfo/).*$')"
-        if [ $? -eq 0 ]; then
-          export TZ="$new_TZ"
-        fi
+        [ $? -eq 0 ] && export TZ="$new_TZ"
       fi
 
       set -a
@@ -145,7 +146,5 @@ stdenvNoCC.mkDerivation {
     ln -s ${steam-unwrapped}/share $out/share
   '';
 
-  passthru = {
-    run = steam-run;
-  };
+  passthru.run = steam-run;
 }

@@ -10,23 +10,10 @@
   libxcrypt-legacy,
   copyDesktopItems,
   makeDesktopItem,
-  hcli,
 
   lib,
   ...
 }:
-let
-  pythonForIDA = python314.withPackages (
-    ps: with ps; [
-      ida-hcli
-      ida-settings
-
-      rpyc
-      unicorn
-      # pybinwalk
-    ]
-  );
-in
 
 # cc needed for $NIX_CC/nix-support/dynamic-linker
 stdenv.mkDerivation rec {
@@ -75,7 +62,7 @@ stdenv.mkDerivation rec {
     libsecret
     libxcrypt-legacy
     gtk3
-    pythonForIDA
+    python314
   ]
   ++ qt6.qtbase.propagatedBuildInputs
   ++ qt6.qtwayland.propagatedBuildInputs;
@@ -109,13 +96,13 @@ stdenv.mkDerivation rec {
 
     for file in opt/libida{,32}.so; do
       echo "Patching $file"
-      ${lib.getExe pythonForIDA} -c "import sys; data = open('$file', 'rb').read(); open('$file', 'wb').write(data.replace(bytes.fromhex('$before'), bytes.fromhex('$after')))"
+      ${lib.getExe python314} -c "import sys; data = open('$file', 'rb').read(); open('$file', 'wb').write(data.replace(bytes.fromhex('$before'), bytes.fromhex('$after')))"
     done
     #! End Patch
 
     cp -r opt/* $IDADIR/
 
-    ${lib.getExe pythonForIDA} -m compileall -s $IDADIR $IDADIR
+    ${lib.getExe python314} -m compileall -s $IDADIR $IDADIR
 
     # Link the exported libraries to the output.
     for lib in $IDADIR/*.so; do # $IDADIR/*.so.6
@@ -131,21 +118,19 @@ stdenv.mkDerivation rec {
     addAutoPatchelfSearchPath $IDADIR
 
     # Link the binaries to the output.
-    for bb in ida; do
-      makeWrapper $IDADIR/$bb $out/bin/$bb \
-        --prefix PATH : ${lib.makeBinPath [ pythonForIDA ]} \
-        --set IDADIR $IDADIR \
-        --set LUMINA_TLS 0 # for custom Lumina servers
-        # --set PYTHONVERBOSE 1
-    done
-
-    makeWrapper ${lib.getExe hcli} $out/bin/hcli \
-      --set HCLI_CURRENT_IDA_INSTALL_DIR $IDADIR \
-      --set HCLI_CURRENT_IDA_PYTHON_EXE ${lib.getExe pythonForIDA}
+    makeWrapper $IDADIR/ida $out/bin/ida \
+      --set IDADIR $IDADIR \
+      --set IDAPYTHON_VENV_EXECUTABLE ~/.idapro/.venv/bin/python \
+      --set LUMINA_TLS 0 # for custom Lumina servers
+      # --set PYTHONVERBOSE 1
 
     install -m 444 -D $IDADIR/appico.png $out/share/icons/hicolor/128x128/apps/ida.png
 
     runHook postInstall
+  '';
+
+  postFixup = ''
+    $out/opt/idapyswitch -s ${python314}/lib/libpython3.14.so
   '';
 
   meta = with lib; {

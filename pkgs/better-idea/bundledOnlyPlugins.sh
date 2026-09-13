@@ -17,24 +17,25 @@ PRODUCTS_MAVEN=(idea clion) # studio)
  # - ${(linux/amd64)? if multiplatform zip} + /native-helper/intellij-rust-native-helper
  # - lldb/helpers
 
-# MAVEN_BASE='https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij'
-MAVEN_BASE='https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij'
+MAVEN_BASE='https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij'
+# MAVEN_BASE='https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij'
 
 BLACKLIST=(
 	'localization-*'
-	'cwm-plugin'
-	'platform-daemon-plugin'
-	'fullLine'
-	'javaee-*'
-	'*-sharedIndexes-bundled'
+	# 'cwm-plugin'
+	'remote-dev-server'
+	'DatabaseTools'
 	# 'android-ndk' # !
 	'lib/*'
+	'javascript-*'
 )
 
 ESSENTIAL=(
 	'com.intellij.java'
 	'com.intellij.modules.json'
-	'intellij.properties' # needed by Groovy
+	# 'com.intellij.modules.jcef'
+	'com.intellij.properties' # needed by Groovy
+	'java-aetherDependencyResolver-plugin'
 )
 
 INFO_JSON=
@@ -42,8 +43,10 @@ BN_IDEA=
 mkdir -p /tmp/JottedBrains
 cd /tmp/JottedBrains || exit 1
 
+rm -rf plugins/ || true
+
 black_light='\e[1;30m'
-# red_light='\e[1;31m'
+red_light='\e[1;31m'
 green_light='\e[1;32m'
 yellow_light='\e[1;33m'
 blue_light='\e[1;34m'
@@ -68,6 +71,8 @@ first(
 
 		local url="$MAVEN_BASE/$code/$code/maven-metadata.xml"
 		version="$(xh -F "$url" | yq -p xml .metadata.versioning.latest)"
+		# TODO: filter for latest non candidate version
+		version="263.3889.65-EAP"
 
 		version="${version%-CANDIDATE}"
 		version="${version%-SNAPSHOT}"
@@ -80,14 +85,24 @@ should_keep() {
 	local name="$1" dir="$2" p
 
 	if [[ -d "plugins/$dir" ]]; then
-		echo -e "${yellow_light}Already have $name in $dir$reset"
+		echo -e "${yellow_light}Already have $name [$dir]$reset"
 		return 1
+	fi
+
+	if printf "%s\n" ${ESSENTIAL[@]} | grep -Fqx "$name"; then
+		echo -e "${red_light}Essential plugin: $name [$dir]$reset"
+		return 0
+	fi
+
+	if echo "$INCLUDED" | grep -Fqx "$name"; then
+	  echo -e "${reset}Available from marketplace: $name [$dir]$reset"
+	  return 1
 	fi
 
 	for p in "${BLACKLIST[@]}"; do
 		# shellcheck disable=SC2053
 		if [[ "$name" == $p || "$dir" == $p ]]; then
-			echo -e "${black_light}Blacklisted: $name$reset"
+			echo -e "${black_light}Blacklisted: $name [$dir]$reset"
 			return 1
 		fi
 	done
@@ -129,16 +144,13 @@ for CODE in "${PRODUCTS_MAVEN[@]}"; do
 	)"
 
 	while IFS= read -r plugin; do
-		if grep -Fqx "$plugin" <<< "$INCLUDED" && ! grep -Fqx "$plugin" <<< "$ESSENTIAL"; then
-			continue
-		fi
 
 		DIR="${LOCATIONS["$plugin"]:-}"
 		[[ -z "$DIR" ]] && continue
 
 		should_keep "$plugin" "$DIR" || continue
 
-		echo -e "${green_light}Extracting: $plugin -> $DIR$reset"
+		echo -e "${green_light}Extracting: $plugin [$DIR]$reset"
 		7zz x "$ARCHIVE" "${ROOT}plugins/$DIR" -bso0
 	done <<< "$(getJson -o ini '.bundledPlugins[]')"
 

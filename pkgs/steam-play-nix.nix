@@ -257,7 +257,7 @@ let
         "${me}" // Internal name of this tool
         {
           "install_path" "."
-          "display_name" "${me}"
+          "display_name" "Nix Native Runtime"
           "from_oslist"  "linux"
           "to_oslist"    "linux"
         }
@@ -285,12 +285,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     "steamcompattool"
   ];
 
+  phases = [ "installPhase" ];
   installPhase = ''
     # Make it impossible to add to an environment. You should use the appropriate NixOS option.
     # Also leave some breadcrumbs in the file.
     echo "${finalAttrs.pname} should not be installed into environments. Please use programs.steam.extraCompatPackages instead." > $out
 
-    install -Dt $steamcompattool ${vdf.compatibilitytool} ${vdf.toolmanifest}
+    install -Dm644 ${vdf.compatibilitytool} $steamcompattool/compatibilitytool.vdf
+    install -Dm644 ${vdf.toolmanifest} $steamcompattool/toolmanifest.vdf
   '';
 
   passthru = { inherit rt; };

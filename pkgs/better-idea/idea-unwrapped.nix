@@ -41,13 +41,13 @@ stdenv.mkDerivation rec {
 
   #! NOTE: Cannot be used without the wrapper!
   pname = "idea-unwrapped";
-  version = "2026.2";
+  version = "263.3889.65";
 
   dontUnpack = true;
   src = fetchurl {
     # version for releases, buildNumber for EAPs
     url = "https://download.jetbrains.com/idea/idea-${version}.tar.gz";
-    hash = "sha256-qAVcre8abu1FWPi8m9WRw6STn0yMNFYP31irTSpceD0=";
+    hash = "sha256-hhy+02ao9+3+PQNQ50YBfUYJ1DibgyiVc2HCIu8HAO8=";
   };
 
   nativeBuildInputs = [ autoPatchelfHook ];

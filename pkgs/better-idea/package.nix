@@ -94,7 +94,7 @@ let
     PATH+=':${launcherPath}'
     set +a
 
-    _LAUNCH_META="$(jq .launch[0] ${package}/product-info.json)"
+    _LAUNCH_META="$(jq .launch[0] "$IDE_HOME/product-info.json")"
     getMeta() { jq -r ".$1" <<< "$_LAUNCH_META"; }
 
     _CLASSPATH=$(getMeta 'bootClassPathJarNames | map("'$IDE_HOME'/lib/" + .) | join(":")')
